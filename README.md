@@ -1,6 +1,6 @@
 # 🐘 Shared PostgreSQL Docker Instance
 
-A secure, reusable PostgreSQL Docker setup designed for local development across multiple projects. Perfect for microservices, full-stack applications, or any scenario where you need a reliable PostgreSQL instance.
+A secure, reusable PostgreSQL Docker setup with **pgvector extension** for AI/ML applications. Perfect for microservices, full-stack applications, vector databases, embeddings storage, and similarity search.
 
 ## 🔒 SECURITY FIRST!
 
@@ -63,6 +63,43 @@ docker-compose down
 docker-compose down -v
 ```
 
+## 🧮 Vector Extensions & Features
+
+This setup includes **pgvector** and additional useful extensions:
+
+- **pgvector**: Store and query vector embeddings (AI/ML)
+- **uuid-ossp**: Generate UUIDs
+- **pg_trgm**: Trigram text search and similarity
+- **btree_gin/btree_gist**: Advanced indexing
+
+### Vector Usage Examples
+
+**Store OpenAI embeddings:**
+```sql
+-- Create table for embeddings
+CREATE TABLE documents (
+    id SERIAL PRIMARY KEY,
+    content TEXT,
+    embedding vector(1536)  -- OpenAI ada-002 dimensions
+);
+
+-- Insert embedding
+INSERT INTO documents (content, embedding) 
+VALUES ('Hello world', '[0.1, 0.2, 0.3, ...]');
+
+-- Find similar documents (cosine similarity)
+SELECT content, 1 - (embedding <=> '[0.1, 0.2, 0.3, ...]') as similarity
+FROM documents
+ORDER BY embedding <=> '[0.1, 0.2, 0.3, ...]'
+LIMIT 5;
+```
+
+**Create optimized vector index:**
+```sql
+-- HNSW index for fast similarity search
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops);
+```
+
 ## Configuration
 
 Edit `.env` file to customize:
@@ -108,22 +145,59 @@ Edit `.env` file to customize:
 
 ### Connecting from Different Projects
 
-**Node.js/JavaScript:**
+**Node.js/JavaScript with vectors:**
 ```javascript
-// Using pg or any PostgreSQL client
-const connectionString = 'postgresql://casa_connect_user:secure_password_here@localhost:5432/casa_connect';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: 'postgresql://casa_connect_user:secure_password_here@localhost:5432/casa_connect'
+});
+
+// Insert vector
+await pool.query(
+  'INSERT INTO embeddings (content, embedding) VALUES ($1, $2)',
+  ['Hello world', '[0.1, 0.2, 0.3, ...]']
+);
+
+// Similarity search
+const result = await pool.query(`
+  SELECT content, 1 - (embedding <=> $1) as similarity
+  FROM embeddings
+  ORDER BY embedding <=> $1
+  LIMIT 5
+`, ['[0.1, 0.2, 0.3, ...]']);
 ```
 
-**Python:**
+**Python with pgvector:**
 ```python
-# Using psycopg2 or SQLAlchemy
-DATABASE_URL = "postgresql://casa_connect_user:secure_password_here@localhost:5432/casa_connect"
+import psycopg2
+import numpy as np
+from pgvector.psycopg2 import register_vector
+
+conn = psycopg2.connect("postgresql://casa_connect_user:secure_password_here@localhost:5432/casa_connect")
+register_vector(conn)
+
+# Insert vector
+embedding = np.array([0.1, 0.2, 0.3])
+cur.execute("INSERT INTO embeddings (content, embedding) VALUES (%s, %s)", 
+           ("Hello world", embedding))
+
+# Similarity search
+cur.execute("SELECT content FROM embeddings ORDER BY embedding <=> %s LIMIT 5", (embedding,))
 ```
 
-**Go:**
+**Go with pgvector:**
 ```go
-// Using pgx or database/sql
-dsn := "postgres://casa_connect_user:secure_password_here@localhost:5432/casa_connect"
+import (
+    "github.com/pgvector/pgvector-go"
+    "github.com/jackc/pgx/v5"
+)
+
+conn, _ := pgx.Connect(ctx, "postgres://casa_connect_user:secure_password_here@localhost:5432/casa_connect")
+
+// Insert vector
+embedding := pgvector.NewVector([]float32{0.1, 0.2, 0.3})
+conn.Exec(ctx, "INSERT INTO embeddings (content, embedding) VALUES ($1, $2)", "Hello world", embedding)
 ```
 
 **Docker Compose Integration:**
@@ -235,7 +309,8 @@ postgres-shared/
 ├── .env                   # Your environment (gitignored)
 ├── .gitignore            # Git ignore rules
 ├── init/                 # Database initialization scripts
-│   └── 01-create-databases.sql
+│   ├── 00-enable-extensions.sql    # Enable pgvector and other extensions
+│   └── 01-create-databases.sql     # Create project databases
 └── README.md             # This file
 ```
 
