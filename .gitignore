@@ -1,0 +1,17 @@
+# Environment files with secrets
+.env
+
+# Database data (if using local volumes)
+data/
+pgdata/
+
+# Logs
+*.log
+
+# Backup files
+*.sql.backup
+*.dump
+
+# OS generated files
+.DS_Store
+Thumbs.db
