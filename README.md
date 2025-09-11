@@ -311,6 +311,13 @@ Edit `.env` file to customize:
 - `JAEGER_UI_PORT`: Jaeger UI port (default: 16687)
 - `PROMETHEUS_PORT`: Prometheus port (default: 9091)
 
+### Data Persistence Configuration
+
+- `DATA_PATH`: Base path for all data storage (default: `~/postgres-ai-data`)
+- `POSTGRES_DATA_PATH`: PostgreSQL data directory (default: `${DATA_PATH}/postgres`)
+- `PROMETHEUS_DATA_PATH`: Prometheus metrics storage (default: `${DATA_PATH}/prometheus`) 
+- `GRAFANA_DATA_PATH`: Grafana dashboards and config (default: `${DATA_PATH}/grafana`)
+
 ## Connection Details
 
 - **Host**: localhost (or configured IPs)
@@ -373,6 +380,54 @@ open http://YOUR_HOST_IP:16687 # Jaeger
 - ✅ **VPN/private networks** for remote access
 - ✅ **Firewall rules** to limit access
 - ✅ **SSL/TLS encryption** (enabled by default)
+
+## 💾 Data Persistence Configuration
+
+### Custom Storage Locations
+
+You can customize where your data is stored by configuring paths in your `.env` file:
+
+```bash
+# Example configurations in .env
+
+# Store in user home directory (default)
+DATA_PATH=~/postgres-ai-data
+
+# Store everything in current directory (relative)
+DATA_PATH=./data
+
+# Store on external storage
+DATA_PATH=/mnt/storage/postgres-platform
+
+# Store in system directory (requires permissions)
+DATA_PATH=/opt/postgres-ai-platform/data
+
+# Individual service paths (advanced)
+POSTGRES_DATA_PATH=/var/lib/postgresql/data
+PROMETHEUS_DATA_PATH=/var/lib/prometheus  
+GRAFANA_DATA_PATH=/var/lib/grafana
+```
+
+### Storage Requirements
+
+- **PostgreSQL**: ~100MB minimum, grows with data
+- **Prometheus**: ~10MB per day for metrics retention
+- **Grafana**: ~10MB for dashboards and settings
+
+### Backup and Migration
+
+```bash
+# Backup all data
+tar -czf postgres-ai-backup.tar.gz data/
+
+# Migrate to new location
+mv data/ /new/storage/location/
+# Update DATA_PATH in .env
+# Restart services
+
+# Restore from backup  
+tar -xzf postgres-ai-backup.tar.gz
+```
 
 ## 🏗️ Multi-Project Database Architecture
 

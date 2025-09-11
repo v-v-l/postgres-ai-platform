@@ -16,7 +16,7 @@ services:
     ports:
       - "${POSTGRES_HOST:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - ./data/prod:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH:-~/postgres-ai-data/postgres}:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d
       # Security configurations (mounted to correct locations)
       - ./postgres-config/server.crt:/var/lib/postgresql/server.crt
@@ -47,7 +47,7 @@ services:
       - "${PROMETHEUS_PORT:-9091}:9090"
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ${PROMETHEUS_DATA_PATH:-~/postgres-ai-data/prometheus}:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -89,7 +89,7 @@ services:
     ports:
       - "${GRAFANA_PORT:-3005}:3000"
     volumes:
-      - grafana_data:/var/lib/grafana
+      - ${GRAFANA_DATA_PATH:-~/postgres-ai-data/grafana}:/var/lib/grafana
       - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
       - ./observability/grafana/provisioning:/etc/grafana/provisioning
     environment:
@@ -102,9 +102,8 @@ services:
     depends_on:
       - prometheus
 
-volumes:
-  prometheus_data:
-  grafana_data:
+# All data is now stored in configurable host directories
+# No named volumes needed
 
 networks:
   postgres-network:

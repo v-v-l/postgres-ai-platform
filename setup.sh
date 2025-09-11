@@ -62,8 +62,29 @@ if [ -f "configure-network.sh" ]; then
     ./configure-network.sh >/dev/null 2>&1 || true
 fi
 
-# Clean up any old data (PostgreSQL version upgrade)
-echo -e "${BLUE}🧹 Cleaning up old data directories...${NC}"
+# Create data directories
+echo -e "${BLUE}📁 Creating data directories...${NC}"
+
+# Read data paths from .env or use defaults
+DATA_PATH=${DATA_PATH:-~/postgres-ai-data}
+# Expand tilde to home directory
+DATA_PATH="${DATA_PATH/#\~/$HOME}"
+POSTGRES_DATA_PATH=${POSTGRES_DATA_PATH:-${DATA_PATH}/postgres}
+PROMETHEUS_DATA_PATH=${PROMETHEUS_DATA_PATH:-${DATA_PATH}/prometheus}
+GRAFANA_DATA_PATH=${GRAFANA_DATA_PATH:-${DATA_PATH}/grafana}
+
+# Create directories with proper permissions
+mkdir -p "${POSTGRES_DATA_PATH}" "${PROMETHEUS_DATA_PATH}" "${GRAFANA_DATA_PATH}"
+
+# Set proper permissions for Grafana (runs as user 472)
+chmod 755 "${GRAFANA_DATA_PATH}"
+
+echo "  - PostgreSQL data: ${POSTGRES_DATA_PATH}"
+echo "  - Prometheus data: ${PROMETHEUS_DATA_PATH}"  
+echo "  - Grafana data: ${GRAFANA_DATA_PATH}"
+
+# Clean up legacy data directories (PostgreSQL version upgrade)
+echo -e "${BLUE}🧹 Cleaning up legacy data directories...${NC}"
 rm -rf ./data/prod ./data/dev 2>/dev/null || true
 
 # Stop any existing containers
@@ -151,6 +172,11 @@ echo "    Password: ${GRAFANA_PASSWORD}"
 echo ""
 echo -e "${YELLOW}🔗 Connection Strings:${NC}"
 echo "  Database URL: postgresql://postgres:${DB_PASSWORD}@localhost:5433/postgres"
+echo ""
+echo -e "${YELLOW}💾 Data Storage Locations:${NC}"
+echo "  PostgreSQL: ${POSTGRES_DATA_PATH}"
+echo "  Prometheus: ${PROMETHEUS_DATA_PATH}"
+echo "  Grafana:    ${GRAFANA_DATA_PATH}"
 echo ""
 echo -e "${BLUE}💡 Quick Commands:${NC}"
 echo "  # Connect to database"
