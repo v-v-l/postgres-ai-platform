@@ -56,17 +56,31 @@ EOF
 
 echo -e "${GREEN}✅ Environment configuration created${NC}"
 
+# Configure network access
+echo -e "${BLUE}🔧 Configuring network access...${NC}"
+if [ -f "configure-network.sh" ]; then
+    ./configure-network.sh >/dev/null 2>&1 || true
+fi
+
 # Clean up any old data (PostgreSQL version upgrade)
 echo -e "${BLUE}🧹 Cleaning up old data directories...${NC}"
 rm -rf ./data/prod ./data/dev 2>/dev/null || true
 
 # Stop any existing containers
 echo -e "${BLUE}🛑 Stopping existing containers...${NC}"
-docker-compose -f docker-compose.prod.yml down >/dev/null 2>&1 || true
+if [ -f "docker-compose.override.yml" ]; then
+    docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml down >/dev/null 2>&1 || true
+else
+    docker-compose -f docker-compose.prod.yml down >/dev/null 2>&1 || true
+fi
 
 # Start the production stack
 echo -e "${BLUE}🚀 Starting PostgreSQL AI/ML + Observability Stack...${NC}"
-docker-compose -f docker-compose.prod.yml up -d
+if [ -f "docker-compose.override.yml" ]; then
+    docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml up -d
+else
+    docker-compose -f docker-compose.prod.yml up -d
+fi
 
 # Wait for services to start
 echo -e "${BLUE}⏳ Waiting for services to initialize...${NC}"
