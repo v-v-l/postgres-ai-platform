@@ -60,18 +60,23 @@ docker-compose -f docker-compose.dev.yml up -d
 docker-compose -f docker-compose.dev.yml ps
 ```
 
-#### **Production Mode** (Enhanced Security)
+#### **Production Mode** (Enhanced Security + Observability)
 ```bash
 # 1-3. Same setup as development
 
-# 4. Start PostgreSQL (Production with SSL, logging, limits)
+# 4. Start PostgreSQL + Observability Stack (with SSL, logging, limits)
 docker-compose -f docker-compose.prod.yml up -d
 
-# 5. Verify it's running
+# 5. Verify all services are running
 docker-compose -f docker-compose.prod.yml ps
 
 # 6. Test SSL connection
-psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5432/postgres?sslmode=require" -c "SELECT version();"
+psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres?sslmode=require" -c "SELECT version();"
+
+# 7. Access observability tools
+echo "Grafana: http://localhost:3005 (admin/admin)"
+echo "Prometheus: http://localhost:9091"  
+echo "Jaeger: http://localhost:16687"
 ```
 
 #### **Legacy Mode** (Default docker-compose.yml)
@@ -289,20 +294,46 @@ WHERE similarity(content, 'machine lerning') > 0.3
 ORDER BY trigram_similarity DESC;
 ```
 
+## 📊 Observability Stack
+
+This setup includes production-ready observability with **Grafana + Prometheus + Jaeger** for comprehensive monitoring and tracing.
+
+### **What You Get**
+- **PostgreSQL Metrics**: Connection counts, query rates, cache hit ratios
+- **AI/ML Monitoring**: Vector operation performance, embedding query latency  
+- **Application Tracing**: End-to-end request tracing with Jaeger
+- **Custom Dashboards**: Pre-built PostgreSQL AI/ML dashboard
+
+### **Access URLs** (Production Mode)
+- **Grafana**: http://localhost:3005 (admin/admin - change in .env)
+- **Prometheus**: http://localhost:9091  
+- **Jaeger**: http://localhost:16687
+
+### **Key Metrics Tracked**
+- Database connections and transaction rates
+- Vector similarity search performance
+- pgvector extension usage patterns
+- Query execution times and slow queries
+- Resource utilization (CPU, memory, I/O)
+
 ## Configuration
 
 Edit `.env` file to customize:
 - `POSTGRES_DB`: Default database name
 - `POSTGRES_USER`: Database user
 - `POSTGRES_PASSWORD`: Database password  
-- `POSTGRES_PORT`: Host port (default: 5432)
+- `POSTGRES_PORT`: Host port (default: 5433 - non-default for security)
+- `GRAFANA_PORT`: Grafana UI port (default: 3005)
+- `GRAFANA_ADMIN_PASSWORD`: Grafana admin password
+- `JAEGER_UI_PORT`: Jaeger UI port (default: 16687)
+- `PROMETHEUS_PORT`: Prometheus port (default: 9091)
 
 ## Connection Details
 
 - **Host**: localhost
-- **Port**: 5432 (or your custom port)
+- **Port**: 5433 (non-default for security)
 - **Database**: postgres (or your custom database)
-- **Connection URL**: `postgresql://postgres:postgres123@localhost:5432/postgres`
+- **Connection URL**: `postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres`
 
 ## 🏗️ Multi-Project Database Architecture
 
@@ -630,8 +661,8 @@ docker-compose up -d --force-recreate
 postgres-shared/
 ├── docker-compose.yml           # Legacy configuration (backward compatibility)
 ├── docker-compose.dev.yml       # Development: Fast, simple setup
-├── docker-compose.prod.yml      # Production: Security, SSL, logging, limits
-├── .env.example                 # Environment template
+├── docker-compose.prod.yml      # Production: Security, SSL, logging, limits + observability
+├── .env.example                 # Environment template (includes observability ports)
 ├── .env                         # Your environment (gitignored)
 ├── .gitignore                   # Git ignore rules
 ├── init/                        # Database initialization scripts
@@ -643,6 +674,11 @@ postgres-shared/
 │   ├── server.crt              # SSL certificate
 │   ├── server.key              # SSL private key
 │   └── generate-ssl.sh         # SSL certificate generator
+├── observability/               # Monitoring and observability stack
+│   ├── prometheus.yml           # Prometheus configuration
+│   └── grafana/                 # Grafana dashboards and provisioning
+│       ├── dashboards/          # Pre-built PostgreSQL AI/ML dashboard
+│       └── provisioning/        # Auto-configure datasources
 └── README.md                    # This file
 ```
 
@@ -653,9 +689,12 @@ postgres-shared/
 | **SSL/TLS** | ❌ Disabled | ✅ Required | ❌ Disabled |
 | **Logging** | ❌ Minimal | ✅ Full logging | ❌ Minimal |
 | **Resource Limits** | ❌ Unlimited | ✅ CPU/Memory limits | ❌ Unlimited |
+| **Observability** | ❌ None | ✅ Grafana+Prometheus+Jaeger | ❌ None |
+| **Monitoring** | ❌ None | ✅ PostgreSQL + AI/ML metrics | ❌ None |
+| **Ports** | Default (5432) | Non-default (5433) | Default (5432) |
 | **Container Name** | postgres-dev | postgres-prod | postgres-shared |
 | **Data Volume** | postgres_dev_data | postgres_prod_data | postgres_data |
-| **Setup Speed** | ⚡ Fast | 🐌 Slower (security) | ⚡ Fast |
+| **Setup Speed** | ⚡ Fast | 🐌 Slower (security+observability) | ⚡ Fast |
 | **Use Case** | Local development | Production/Staging | Backward compatibility |
 
 ## 🚀 Production Recommendations

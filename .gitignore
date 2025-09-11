@@ -4,6 +4,7 @@
 # Database data (if using local volumes)
 data/
 pgdata/
+docs/
 
 # Logs
 *.log

@@ -1,0 +1,67 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "PostgreSQL AI/ML Platform",
+    "tags": ["postgresql", "ai", "ml", "pgvector"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Database Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends{datname=\"postgres\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 50},
+                {"color": "red", "value": 100}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Query Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\"}[5m]) + rate(pg_stat_database_xact_rollback{datname=\"postgres\"}[5m])",
+            "refId": "A",
+            "legendFormat": "Transactions/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Vector Operations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "pg_stat_user_tables_seq_scan{relname=~\".*embedding.*|.*vector.*\"}",
+            "refId": "A",
+            "legendFormat": "Vector Table Scans"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}
