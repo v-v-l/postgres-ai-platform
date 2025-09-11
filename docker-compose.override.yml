@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    ports:
+      - "0.0.0.0:${POSTGRES_PORT:-5433}:5432"
+
+  grafana:
+    ports:
+      - "0.0.0.0:${GRAFANA_PORT:-3005}:3000"
+
+  prometheus:
+    ports:
+      - "0.0.0.0:${PROMETHEUS_PORT:-9091}:9090"
+
+  jaeger:
+    ports:
+      - "${JAEGER_COLLECTOR_PORT:-14251}:14250"
+      - "0.0.0.0:${JAEGER_UI_PORT:-16687}:16686"

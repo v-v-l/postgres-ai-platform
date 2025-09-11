@@ -2,12 +2,13 @@
 # Add one IP address per line
 # Use 127.0.0.1 for localhost only
 # Use 0.0.0.0 for all interfaces (not recommended for production)
-# Use specific IPs like 192.168.1.100 for secure network access
+# Use specific IPs like 192.168.1.218 for secure network access
 #
 # Examples:
 # 127.0.0.1          # Localhost only (default)
-# 192.168.1.100      # Specific machine
+# 192.168.1.218      # This machine's IP
 # 10.0.0.50          # Another specific machine
 # 172.16.1.0/24      # Entire subnet (advanced)
 
 127.0.0.1
+192.168.1.100
