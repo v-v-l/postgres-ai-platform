@@ -107,6 +107,15 @@ for ip in "${ALLOWED_IPS[@]}"; do
     echo ""
 done
 
+# Detect Docker Compose command
+if command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="docker-compose"
+elif docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+else
+    COMPOSE_CMD="docker compose"  # Default to v2 syntax
+fi
+
 echo -e "${BLUE}💡 To apply changes:${NC}"
-echo "  docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml down"
-echo "  docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml up -d"
+echo "  $COMPOSE_CMD -f docker-compose.prod.yml -f docker-compose.override.yml down"
+echo "  $COMPOSE_CMD -f docker-compose.prod.yml -f docker-compose.override.yml up -d"

@@ -60,10 +60,10 @@ openssl rand -base64 32  # For GRAFANA_ADMIN_PASSWORD
 # 3. Edit .env file with the generated passwords
 
 # 4. Start PostgreSQL + Observability Stack
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 
 # 5. Verify all services are running
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 # 6. Test connection
 psql "postgresql://postgres:YOUR_PASSWORD@localhost:5433/postgres" -c "SELECT version();"
@@ -77,10 +77,10 @@ echo "Jaeger: http://localhost:16687"
 ### Stop and Cleanup
 ```bash
 # Stop all services
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 
 # Remove all data (DESTRUCTIVE!)
-docker-compose -f docker-compose.prod.yml down -v
+docker compose -f docker-compose.prod.yml down -v
 ```
 
 ## 🤖 Advanced AI/ML Capabilities
@@ -347,10 +347,10 @@ By default, services are only accessible from localhost. To allow access from sp
 3. **Restart services:**
    ```bash
    # Stop current services
-   docker-compose -f docker-compose.prod.yml down
+   docker compose -f docker-compose.prod.yml down
    
    # Start with new network configuration
-   docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml up -d
+   docker compose -f docker-compose.prod.yml -f docker-compose.override.yml up -d
    ```
 
 ### Automatic Configuration

@@ -21,6 +21,18 @@ if ! docker info >/dev/null 2>&1; then
     exit 1
 fi
 
+# Detect Docker Compose command
+if command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="docker-compose"
+elif docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+else
+    echo -e "${RED}❌ Docker Compose not found. Please install Docker Compose.${NC}"
+    exit 1
+fi
+
+echo -e "${BLUE}🔍 Using: $COMPOSE_CMD${NC}"
+
 echo -e "${BLUE}📋 Generating secure passwords...${NC}"
 
 # Generate secure passwords
@@ -90,17 +102,17 @@ rm -rf ./data/prod ./data/dev 2>/dev/null || true
 # Stop any existing containers
 echo -e "${BLUE}🛑 Stopping existing containers...${NC}"
 if [ -f "docker-compose.override.yml" ]; then
-    docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml down >/dev/null 2>&1 || true
+    $COMPOSE_CMD -f docker-compose.prod.yml -f docker-compose.override.yml down >/dev/null 2>&1 || true
 else
-    docker-compose -f docker-compose.prod.yml down >/dev/null 2>&1 || true
+    $COMPOSE_CMD -f docker-compose.prod.yml down >/dev/null 2>&1 || true
 fi
 
 # Start the production stack
 echo -e "${BLUE}🚀 Starting PostgreSQL AI/ML + Observability Stack...${NC}"
 if [ -f "docker-compose.override.yml" ]; then
-    docker-compose -f docker-compose.prod.yml -f docker-compose.override.yml up -d
+    $COMPOSE_CMD -f docker-compose.prod.yml -f docker-compose.override.yml up -d
 else
-    docker-compose -f docker-compose.prod.yml up -d
+    $COMPOSE_CMD -f docker-compose.prod.yml up -d
 fi
 
 # Wait for services to start
@@ -183,12 +195,12 @@ echo "  # Connect to database"
 echo "  psql \"postgresql://postgres:${DB_PASSWORD}@localhost:5433/postgres\""
 echo ""
 echo "  # View running services"
-echo "  docker-compose -f docker-compose.prod.yml ps"
+echo "  $COMPOSE_CMD -f docker-compose.prod.yml ps"
 echo ""
 echo "  # View logs"
-echo "  docker-compose -f docker-compose.prod.yml logs -f"
+echo "  $COMPOSE_CMD -f docker-compose.prod.yml logs -f"
 echo ""
 echo "  # Stop services"
-echo "  docker-compose -f docker-compose.prod.yml down"
+echo "  $COMPOSE_CMD -f docker-compose.prod.yml down"
 echo ""
 echo -e "${GREEN}✨ Your PostgreSQL AI/ML platform with observability is ready!${NC}"
