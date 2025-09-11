@@ -42,62 +42,45 @@ wget <raw-files-urls>
 
 ### Setup and Run
 
-#### **Development Mode** (Quick & Easy)
+#### **Option 1: Automated Setup (Recommended)**
 ```bash
-# 1. FIRST: Set up your environment
-cp .env.example .env
-
-# 2. Generate a secure password
-openssl rand -base64 32
-
-# 3. Edit .env file with the generated password
-# Replace CHANGE_ME_TO_STRONG_PASSWORD with your secure password
-
-# 4. Start PostgreSQL (Development)
-docker-compose -f docker-compose.dev.yml up -d
-
-# 5. Verify it's running
-docker-compose -f docker-compose.dev.yml ps
+# One-command setup with secure password generation
+./setup.sh
 ```
 
-#### **Production Mode** (Enhanced Security + Observability)
+#### **Option 2: Manual Setup**
 ```bash
-# 1-3. Same setup as development
+# 1. Set up your environment
+cp .env.example .env
 
-# 4. Start PostgreSQL + Observability Stack (with SSL, logging, limits)
+# 2. Generate secure passwords
+openssl rand -base64 32  # For POSTGRES_PASSWORD
+openssl rand -base64 32  # For GRAFANA_ADMIN_PASSWORD
+
+# 3. Edit .env file with the generated passwords
+
+# 4. Start PostgreSQL + Observability Stack
 docker-compose -f docker-compose.prod.yml up -d
 
 # 5. Verify all services are running
 docker-compose -f docker-compose.prod.yml ps
 
-# 6. Test SSL connection
-psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres?sslmode=require" -c "SELECT version();"
+# 6. Test connection
+psql "postgresql://postgres:YOUR_PASSWORD@localhost:5433/postgres" -c "SELECT version();"
 
 # 7. Access observability tools
-echo "Grafana: http://localhost:3005 (admin/admin)"
+echo "Grafana: http://localhost:3005"
 echo "Prometheus: http://localhost:9091"  
 echo "Jaeger: http://localhost:16687"
 ```
 
-#### **Legacy Mode** (Default docker-compose.yml)
-```bash
-# Uses the standard docker-compose.yml for backward compatibility
-docker-compose up -d
-```
-
 ### Stop and Cleanup
 ```bash
-# Development mode
-docker-compose -f docker-compose.dev.yml down
-
-# Production mode  
+# Stop all services
 docker-compose -f docker-compose.prod.yml down
 
-# Legacy mode
-docker-compose down
-
 # Remove all data (DESTRUCTIVE!)
-docker-compose -f docker-compose.dev.yml down -v  # or .prod.yml
+docker-compose -f docker-compose.prod.yml down -v
 ```
 
 ## 🤖 Advanced AI/ML Capabilities
@@ -659,9 +642,8 @@ docker-compose up -d --force-recreate
 
 ```
 postgres-shared/
-├── docker-compose.yml           # Legacy configuration (backward compatibility)
-├── docker-compose.dev.yml       # Development: Fast, simple setup
-├── docker-compose.prod.yml      # Production: Security, SSL, logging, limits + observability
+├── docker-compose.prod.yml      # Complete setup: Security, SSL, logging, limits + observability
+├── setup.sh                     # Automated one-command setup script
 ├── .env.example                 # Environment template (includes observability ports)
 ├── .env                         # Your environment (gitignored)
 ├── .gitignore                   # Git ignore rules
@@ -682,20 +664,18 @@ postgres-shared/
 └── README.md                    # This file
 ```
 
-## 🔄 Configuration Comparison
+## ⚙️ Configuration Features
 
-| Feature | Development | Production | Legacy |
-|---------|-------------|------------|--------|
-| **SSL/TLS** | ❌ Disabled | ✅ Required | ❌ Disabled |
-| **Logging** | ❌ Minimal | ✅ Full logging | ❌ Minimal |
-| **Resource Limits** | ❌ Unlimited | ✅ CPU/Memory limits | ❌ Unlimited |
-| **Observability** | ❌ None | ✅ Grafana+Prometheus+Jaeger | ❌ None |
-| **Monitoring** | ❌ None | ✅ PostgreSQL + AI/ML metrics | ❌ None |
-| **Ports** | Default (5432) | Non-default (5433) | Default (5432) |
-| **Container Name** | postgres-dev | postgres-prod | postgres-shared |
-| **Data Volume** | postgres_dev_data | postgres_prod_data | postgres_data |
-| **Setup Speed** | ⚡ Fast | 🐌 Slower (security+observability) | ⚡ Fast |
-| **Use Case** | Local development | Production/Staging | Backward compatibility |
+This setup provides a single, comprehensive configuration with:
+
+- ✅ **SSL/TLS**: Required for encrypted connections
+- ✅ **Full logging**: Complete audit trail and debugging
+- ✅ **Resource limits**: CPU/Memory constraints for stability  
+- ✅ **Full observability**: Grafana + Prometheus + Jaeger monitoring
+- ✅ **PostgreSQL + AI/ML metrics**: Complete performance visibility
+- ✅ **Non-default ports**: Enhanced security (PostgreSQL: 5433)
+- ✅ **Production-ready**: Suitable for both development and production
+- ✅ **One-command setup**: Automated via `setup.sh`
 
 ## 🚀 Production Recommendations
 
