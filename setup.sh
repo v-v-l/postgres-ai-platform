@@ -88,8 +88,25 @@ GRAFANA_DATA_PATH=${GRAFANA_DATA_PATH:-${DATA_PATH}/grafana}
 # Create directories with proper permissions
 mkdir -p "${POSTGRES_DATA_PATH}" "${PROMETHEUS_DATA_PATH}" "${GRAFANA_DATA_PATH}"
 
-# Set proper permissions for Grafana (runs as user 472)
+# Set proper ownership for Grafana (runs as UID 472)
+# Note: Using sudo if available, otherwise fallback to current user
+if command -v sudo >/dev/null 2>&1; then
+    echo -e "${BLUE}🔐 Setting proper ownership for service directories...${NC}"
+    sudo chown -R 472:472 "${GRAFANA_DATA_PATH}" 2>/dev/null || {
+        echo -e "${YELLOW}⚠️  Could not set Grafana ownership (needs sudo). Container may have permission issues.${NC}"
+    }
+    sudo chown -R 65534:65534 "${PROMETHEUS_DATA_PATH}" 2>/dev/null || {
+        echo -e "${YELLOW}⚠️  Could not set Prometheus ownership (needs sudo). Container may have permission issues.${NC}"
+    }
+else
+    echo -e "${YELLOW}⚠️  sudo not available. Containers may have permission issues.${NC}"
+    echo -e "${YELLOW}    If containers restart, run: sudo chown -R 472:472 ${GRAFANA_DATA_PATH}${NC}"
+    echo -e "${YELLOW}    and: sudo chown -R 65534:65534 ${PROMETHEUS_DATA_PATH}${NC}"
+fi
+
+# Set proper permissions
 chmod 755 "${GRAFANA_DATA_PATH}"
+chmod 755 "${PROMETHEUS_DATA_PATH}"
 
 echo "  - PostgreSQL data: ${POSTGRES_DATA_PATH}"
 echo "  - Prometheus data: ${PROMETHEUS_DATA_PATH}"  
