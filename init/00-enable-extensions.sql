@@ -1,6 +1,9 @@
 -- Enable AI/ML and vector extensions for advanced capabilities
 -- This must be run as superuser (postgres user)
 
+-- Performance Monitoring (must be in shared_preload_libraries)
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements"; -- Query performance statistics for AI/ML optimization
+
 -- Core Vector Operations
 CREATE EXTENSION IF NOT EXISTS vector;       -- pgvector for embeddings and similarity search
 

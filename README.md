@@ -505,17 +505,17 @@ import { Pool } from 'pg';
 
 // Casa Connect Database
 const casaPool = new Pool({
-  connectionString: 'postgresql://casa_connect_user:casa_secure_2024!@localhost:5432/casa_connect_db'
+  connectionString: 'postgresql://casa_connect_user:casa_secure_2024!@localhost:5433/casa_connect_db'
 });
 
-// Portfolio Database  
+// Portfolio Database
 const portfolioPool = new Pool({
-  connectionString: 'postgresql://portfolio_user:portfolio_secure_2024!@localhost:5432/portfolio_db'
+  connectionString: 'postgresql://portfolio_user:portfolio_secure_2024!@localhost:5433/portfolio_db'
 });
 
 // Analytics Database (with vectors)
 const analyticsPool = new Pool({
-  connectionString: 'postgresql://analytics_user:analytics_secure_2024!@localhost:5432/analytics_db'
+  connectionString: 'postgresql://analytics_user:analytics_secure_2024!@localhost:5433/analytics_db'
 });
 
 // Vector operations in analytics
@@ -533,7 +533,7 @@ import psycopg2
 import numpy as np
 from pgvector.psycopg2 import register_vector
 
-conn = psycopg2.connect("postgresql://casa_connect_user:secure_password_here@localhost:5432/casa_connect")
+conn = psycopg2.connect("postgresql://casa_connect_user:secure_password_here@localhost:5433/casa_connect")
 register_vector(conn)
 
 # Insert vector
@@ -552,7 +552,7 @@ import (
     "github.com/jackc/pgx/v5"
 )
 
-conn, _ := pgx.Connect(ctx, "postgres://casa_connect_user:secure_password_here@localhost:5432/casa_connect")
+conn, _ := pgx.Connect(ctx, "postgres://casa_connect_user:secure_password_here@localhost:5433/casa_connect")
 
 // Insert vector
 embedding := pgvector.NewVector([]float32{0.1, 0.2, 0.3})
@@ -566,7 +566,7 @@ services:
   app:
     # ... your app config
     environment:
-      DATABASE_URL: postgresql://casa_connect_user:secure_password_here@host.docker.internal:5432/casa_connect
+      DATABASE_URL: postgresql://casa_connect_user:secure_password_here@host.docker.internal:5433/casa_connect
     depends_on:
       - postgres
     external_links:
@@ -613,7 +613,7 @@ docker-compose down
 docker-compose up -d
 
 # Test SSL connection
-psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5432/postgres?sslmode=require" -c "SELECT version();"
+psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres?sslmode=require" -c "SELECT version();"
 
 # View security logs
 docker-compose exec postgres tail -f /var/lib/postgresql/data/pgdata/log/postgresql-*.log
@@ -622,7 +622,7 @@ docker-compose exec postgres tail -f /var/lib/postgresql/data/pgdata/log/postgre
 ### **Security Monitoring**
 ```bash
 # Check active connections
-psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5432/postgres" -c "SELECT usename, application_name, client_addr, state FROM pg_stat_activity WHERE state = 'active';"
+psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres" -c "SELECT usename, application_name, client_addr, state FROM pg_stat_activity WHERE state = 'active';"
 
 # Check failed login attempts (from logs)
 docker-compose exec postgres grep "FATAL" /var/lib/postgresql/data/pgdata/log/postgresql-*.log
@@ -678,7 +678,7 @@ brew install --cask dbeaver-community
 ### **Connection Settings for Any GUI Tool**
 
 - **Host**: `localhost`
-- **Port**: `5432`
+- **Port**: `5433`
 - **Database**: `postgres`
 - **Username**: `postgres`
 - **Password**: `CHANGE_ME_TO_STRONG_PASSWORD`
@@ -687,10 +687,10 @@ brew install --cask dbeaver-community
 ### **Quick Test Connection**
 ```bash
 # Test connection from command line
-psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5432/postgres" -c "SELECT version();"
+psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres" -c "SELECT version();"
 
 # Test pgvector extension
-psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5432/postgres" -c "SELECT extname FROM pg_extension WHERE extname = 'vector';"
+psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5433/postgres" -c "SELECT extname FROM pg_extension WHERE extname = 'vector';"
 ```
 
 ## 🔧 Troubleshooting
@@ -699,10 +699,10 @@ psql "postgresql://postgres:CHANGE_ME_TO_STRONG_PASSWORD@localhost:5432/postgres
 
 **Port Already in Use:**
 ```bash
-# Check what's using port 5432
-sudo lsof -i :5432
-# Or change port in .env file
-POSTGRES_PORT=5433
+# Check what's using port 5433
+sudo lsof -i :5433
+# Or change port in .env file if needed
+POSTGRES_PORT=5434  # Use a different port
 ```
 
 **Permission Denied:**
